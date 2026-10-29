@@ -1,0 +1,53 @@
+---
+title: System Architecture - Dependency Parser
+config:
+  theme: base
+  themeVariables:
+    fontFamily: "Inter, system-ui, sans-serif"
+    primaryColor: "#F8FAFC"
+    primaryBorderColor: "#1E293B"
+    primaryTextColor: "#1E293B"
+    lineColor: "#64748B"
+    clusterBkg: "#EEF2FF"
+    clusterBorder: "#94A3B8"
+---
+flowchart TB
+    classDef edge     fill:#F59E0B,stroke:#1E293B,color:#1E293B,stroke-width:1px;
+    classDef core     fill:#6366F1,stroke:#1E293B,color:#ffffff,stroke-width:1px;
+    classDef data     fill:#10B981,stroke:#1E293B,color:#ffffff,stroke-width:1px;
+    classDef control  fill:#0EA5E9,stroke:#1E293B,color:#ffffff,stroke-width:1px;
+    classDef obs      fill:#CBD5E1,stroke:#1E293B,color:#1E293B,stroke-width:1px;
+
+    Client([Client]):::edge
+
+    subgraph Train["Training (once at startup)"]
+        direction TB
+        Data[(Projective treebank<br/>generated from a grammar)]:::data
+        Oracle["Static oracle<br/>gold transition sequence"]:::core
+        Perceptron["Averaged perceptron<br/>teacher-forced updates"]:::core
+    end
+
+    Weights[(Transition weights<br/>feature by action)]:::data
+
+    subgraph Edge["Service layer (stdlib HTTP, stateless)"]
+        direction TB
+        Router["Router<br/>/health | /ready | /metrics | /parse | /evaluate"]:::core
+        Validate["Validation<br/>bounded form and part-of-speech list"]:::control
+    end
+
+    subgraph Decode["Greedy decoding"]
+        direction TB
+        Config["Arc-standard configuration<br/>stack, buffer, arcs"]:::core
+        Features["Feature extraction<br/>stack and buffer context"]:::core
+        Argmax["Argmax over legal transitions"]:::control
+    end
+
+    Result["Dependency arcs<br/>head and relation per token"]:::obs
+
+    Data --> Oracle --> Perceptron -->|weights| Weights
+    Client -->|JSON request| Router --> Validate
+    Validate -->|tokens| Config
+    Config --> Features --> Argmax -->|transition| Config
+    Weights -.-> Argmax
+    Config -->|terminal| Result
+    Result --> Router -->|JSON response| Client
