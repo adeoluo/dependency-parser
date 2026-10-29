@@ -21,8 +21,7 @@ A dependency parse states, for every word in a sentence, which other word it dep
 how. It is the backbone of relation extraction, question answering, and grammatical analysis.
 Transition-based parsing casts this structured prediction problem as a sequence of local
 decisions over a stack and a buffer, so a sentence of length *n* is parsed in a linear number
-of steps. This project implements the **arc-standard** system (Nivre, 2004) **from first
-principles**: the configuration and transitions, the **static oracle** that turns a gold tree
+of steps. This project implements the **arc-standard** system (Nivre, 2004) **from scratch**: the configuration and transitions, the **static oracle** that turns a gold tree
 into the transition sequence that builds it, an **averaged structured perceptron** policy over
 sparse features, and greedy decoding, all with **zero runtime dependencies** and no automatic
 differentiation.
