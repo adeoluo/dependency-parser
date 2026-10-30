@@ -73,6 +73,26 @@ makes some prepositions lean toward noun attachment and others toward verb attac
 leaving a residue that cannot be resolved from the observable tokens. The parser learns the
 per-preposition bias and accepts the irreducible remainder, exactly as a real parser must.
 
+### Scale
+
+`benchmarks/scale.py` trains the parser once, then runs greedy decoding over progressively
+larger synthetic treebanks and records wall-clock time, parsing throughput, peak memory
+(`tracemalloc`), and UAS. Timing is measured without tracemalloc (which slows every allocation);
+peak memory is traced separately around the treebank plus a single parse, which is faithful
+because sentences are parsed one at a time. Throughput is roughly flat near 440 to 640 sentences
+per second, peak memory grows linearly with the treebank, and UAS stays stable because the same
+trained parser is applied at every size. Run with `uv run python benchmarks/scale.py`.
+
+| Sentences | Seconds | Throughput (sent/sec) | Peak memory (MiB) | UAS |
+|---:|---:|---:|---:|---:|
+| 1000 | 1.57 | 636.0 | 0.86 | 0.980 |
+| 2000 | 3.65 | 548.7 | 1.72 | 0.979 |
+| 4000 | 7.49 | 534.1 | 3.43 | 0.978 |
+| 8000 | 18.21 | 439.3 | 6.88 | 0.979 |
+
+Honest caveat: the treebank is synthetic and grammar-generated, and this pure-Python
+implementation is not benchmarked against compiled parsers.
+
 ## Demonstration
 
 ```text
