@@ -53,13 +53,20 @@ class AveragedPerceptron:
             self._nudge((feature, predicted), -1.0)
 
     def finalize(self) -> None:
-        """Replace the weights with their average over all training steps."""
+        """Replace the weights with their average over all training steps.
+
+        Each weight is held from the step it was last set through the final step,
+        inclusive, so the interval spans ``_steps - timestamp + 1`` steps. Omitting
+        the ``+ 1`` would exclude the step on which the weight was set and average
+        the pre-update weights (w0..w(T-1)) rather than the post-update weights
+        (w1..wT) that Collins averaging specifies.
+        """
 
         if self._steps == 0:
             return
         averaged: dict[Key, float] = {}
         for key, weight in self.weights.items():
-            total = self._totals[key] + (self._steps - self._timestamps[key]) * weight
+            total = self._totals[key] + (self._steps - self._timestamps[key] + 1) * weight
             mean = total / self._steps
             if mean:
                 averaged[key] = mean
