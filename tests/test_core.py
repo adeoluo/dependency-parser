@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+import copy
+import random
+
 from dependency_parser.data import (
     ROOT,
     generate_corpus,
@@ -10,6 +13,7 @@ from dependency_parser.data import test_data as held_out_data
 from dependency_parser.data import train_data as training_data
 from dependency_parser.evaluation import evaluate
 from dependency_parser.parser import Parser, TrainingConfig
+from dependency_parser.perceptron import AveragedPerceptron
 from dependency_parser.transitions import (
     Configuration,
     Move,
@@ -69,3 +73,41 @@ def test_parser_produces_a_head_for_every_token() -> None:
     parse = parser.parse(sentence)
     assert set(parse.heads) == set(range(1, len(sentence) + 1))
     assert all(0 <= head <= len(sentence) for head in parse.heads.values())
+
+
+def test_averaged_perceptron_matches_post_update_mean() -> None:
+    # Regression: lazy averaging excluded each weight's setting step, averaging
+    # the pre-update weights (w0..w(T-1)) instead of the post-update weights
+    # (w1..wT). Compare against an explicit brute-force post-update average.
+    actions = ["A", "B", "C"]
+    rng = random.Random(0)
+    sequence = [
+        ([f"f{rng.randint(0, 3)}"], rng.choice(actions), rng.choice(actions)) for _ in range(60)
+    ]
+
+    perceptron = AveragedPerceptron()
+    reference: dict[tuple[str, str], float] = {}
+    snapshots: list[dict[tuple[str, str], float]] = []
+    for features, predicted, gold in sequence:
+        perceptron.update(features, predicted, gold)
+        if predicted != gold:
+            for feature in features:
+                reference[(feature, gold)] = reference.get((feature, gold), 0.0) + 1.0
+                reference[(feature, predicted)] = reference.get((feature, predicted), 0.0) - 1.0
+        snapshots.append(copy.deepcopy(reference))
+    perceptron.finalize()
+
+    keys = set(reference) | set(perceptron.weights)
+    for key in keys:
+        expected = sum(snap.get(key, 0.0) for snap in snapshots) / len(snapshots)
+        assert abs(perceptron.weights.get(key, 0.0) - expected) < 1e-9
+
+
+def test_averaged_perceptron_small_example() -> None:
+    perceptron = AveragedPerceptron()
+    perceptron.update(["f"], "A", "B")
+    perceptron.update(["f"], "A", "B")
+    perceptron.finalize()
+    # weights after each step are 1 then 2; the post-update mean is 1.5.
+    assert perceptron.weights[("f", "B")] == 1.5
+    assert perceptron.weights[("f", "A")] == -1.5
