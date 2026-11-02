@@ -5,36 +5,55 @@ flowchart TD
     classDef control  fill:#0EA5E9,stroke:#1E293B,color:#ffffff,stroke-width:1px;
     classDef obs      fill:#CBD5E1,stroke:#1E293B,color:#1E293B,stroke-width:1px;
 
-    Client([Client]):::edge
+    User([CLI user]):::edge
+    Client([HTTP client]):::edge
 
-    subgraph Train["Training (once at startup)"]
+    subgraph Interfaces["Interfaces (CLI and stdlib HTTP)"]
         direction TB
-        Data[(Projective treebank<br/>generated from a grammar)]:::data
+        CLI["cli.py<br/>evaluate | parse | serve"]:::edge
+        Router["service.py router<br/>/health /ready /parse /evaluate /metrics"]:::core
+        Validate["Request validation<br/>form and pos objects, max 100"]:::control
+    end
+
+    subgraph Core["Core logic (arc-standard parser)"]
+        direction TB
         Oracle["Static oracle<br/>gold transition sequence"]:::core
-        Perceptron["Averaged perceptron<br/>teacher-forced updates"]:::core
+        Trainer["parser.py training loop<br/>teacher forcing, shuffled epochs"]:::core
+        Configuration["Configuration<br/>stack, buffer, arcs"]:::core
+        Features["features.py<br/>stack and buffer templates"]:::core
+        Legal["Legal transitions<br/>SHIFT, LEFT, RIGHT"]:::control
     end
 
-    Weights[(Transition weights<br/>feature by action)]:::data
-
-    subgraph Edge["Service layer (stdlib HTTP, stateless)"]
+    subgraph State["Data and model state (in memory)"]
         direction TB
-        Router["Router<br/>/health | /ready | /metrics | /parse | /evaluate"]:::core
-        Validate["Validation<br/>bounded form and part-of-speech list"]:::control
+        Treebank[("data.py<br/>seeded projective treebank")]:::data
+        TrainConfig["TrainingConfig<br/>epochs, seed"]:::control
+        Weights[("Averaged perceptron<br/>feature by action weights")]:::data
     end
 
-    subgraph Decode["Greedy decoding"]
+    subgraph Obs["Evaluation and observability"]
         direction TB
-        Config["Arc-standard configuration<br/>stack, buffer, arcs"]:::core
-        Features["Feature extraction<br/>stack and buffer context"]:::core
-        Argmax["Argmax over legal transitions"]:::control
+        Eval["evaluation.py<br/>UAS and LAS"]:::obs
+        Metrics["ServiceMetrics<br/>Prometheus text"]:::obs
+        Response["JSON heads and relations"]:::obs
     end
 
-    Result["Dependency arcs<br/>head and relation per token"]:::obs
-
-    Data --> Oracle --> Perceptron -->|weights| Weights
-    Client -->|JSON request| Router --> Validate
-    Validate -->|tokens| Config
-    Config --> Features --> Argmax -->|transition| Config
-    Weights -.-> Argmax
-    Config -->|terminal| Result
-    Result --> Router -->|JSON response| Client
+    User -->|arguments| CLI
+    Client -->|JSON request| Router
+    Router -->|POST /parse| Validate
+    CLI -->|train before use| Trainer
+    Treebank -->|train split, 400 trees| Oracle
+    Oracle -->|gold transitions| Trainer
+    TrainConfig -.-> Trainer
+    Features -->|training features| Trainer
+    Trainer -->|perceptron updates| Weights
+    Validate -->|tokens| Configuration
+    CLI -->|form/POS tokens| Configuration
+    Configuration -->|context| Features
+    Features -->|feature strings| Legal
+    Weights -.->|scores| Legal
+    Legal -->|argmax transition| Configuration
+    Configuration -->|terminal arcs| Response
+    Treebank -.->|test split, 100 trees| Eval
+    Configuration -->|predicted arcs| Eval
+    Router -.->|route latency and errors| Metrics

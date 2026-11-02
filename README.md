@@ -32,9 +32,16 @@ greedy decoding, all with no automatic differentiation.
   <img src="docs/architecture/architecture.svg" alt="Architecture diagram" width="860">
 </p>
 
-A configuration holds a stack, a buffer, and the arcs committed so far. At each step the
-perceptron scores every legal transition from the surrounding words and parts of speech and
-the highest-scoring one is applied. See the [ADRs](docs/adr/) for the key decisions.
+<sub>Legend: amber = entry points and external systems, indigo = core logic, green = data and state, blue = validation and control, grey = observability and outputs.</sub>
+
+The CLI and the HTTP service both train the parser on the seeded training treebank before use:
+the static oracle turns each gold tree into a transition sequence and the averaged perceptron
+learns from it with teacher forcing. At parse time a configuration holds a stack, a buffer, and
+the arcs committed so far. At each step the perceptron scores every legal transition from the
+surrounding words and parts of speech and the highest-scoring one is applied, until the
+terminal configuration yields a head and relation per token. Held-out trees are scored with
+UAS and LAS, and every route records latency and errors for `/metrics`. See the
+[ADRs](docs/adr/) for the key decisions.
 
 ### The transition system
 
