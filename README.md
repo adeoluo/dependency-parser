@@ -187,6 +187,12 @@ Attachment scores on the held-out set.
   <img src="docs/demo/evaluate.gif" alt="Attachment scores on the held-out set" width="860">
 </p>
 
+The HTTP service parsing a tagged sentence into labeled arcs.
+
+<p align="center">
+  <img src="docs/demo/http.gif" alt="The HTTP service parsing a tagged sentence into labeled arcs" width="860">
+</p>
+
 ## Design decisions
 
 - **Arc-standard transitions with a static oracle.** Linear-time parsing with an exact oracle
