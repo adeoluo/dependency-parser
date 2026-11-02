@@ -8,7 +8,7 @@ The transition system needs a policy that, at each configuration, chooses the ne
 The policy is a multi-class classifier over transitions whose inputs are features of the stack
 and buffer. Options range from a neural network (accurate, but it would pull in a tensor
 library and automatic differentiation) to a log-linear model trained by gradient methods, to
-the structured perceptron. We want strong accuracy with zero runtime dependencies and fully
+the structured perceptron. We want strong accuracy with a small, inspectable learner and fully
 transparent training.
 
 ## Decision
@@ -20,7 +20,7 @@ Collins-style **weight averaging** is applied with per-key update timestamps so 
 model is the mean of every intermediate weight vector, computed lazily in one pass.
 
 ## Consequences
-- The learner is a few dozen lines, has no dependencies, and is easy to inspect: a weight is a
+- The learner is a few dozen lines and is easy to inspect: a weight is a
   plain number keyed by a (feature, transition) pair.
 - Averaging markedly reduces variance and is the difference between an unstable perceptron and
   a competitive parser.

@@ -1,8 +1,7 @@
 # Operations Guide - Dependency Parser
 
 The service is a single stateless process that trains the parser once at startup and then
-answers parse and evaluation requests. It has zero runtime dependencies and binds only the
-Python standard library HTTP server.
+answers parse and evaluation requests. It runs on the Python standard library HTTP server.
 
 ## Service contract
 

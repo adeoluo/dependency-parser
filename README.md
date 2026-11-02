@@ -1,16 +1,14 @@
 <h1 align="center">Dependency Parser</h1>
 
 <p align="center">
-  <em>An arc-standard, transition-based dependency parser built from scratch: a static oracle, an averaged structured perceptron policy, greedy decoding, and attachment-score evaluation, with zero runtime dependencies.</em>
+  <em>An arc-standard, transition-based dependency parser built from scratch: a static oracle, an averaged structured perceptron policy, greedy decoding, and attachment-score evaluation.</em>
 </p>
 
 <p align="center">
-  <a href="https://github.com/adeoluo/dependency-parser/actions/workflows/ci.yml"><img alt="Continuous integration" src="https://github.com/adeoluo/dependency-parser/actions/workflows/ci.yml/badge.svg"></a>
-  <img alt="Coverage" src="https://img.shields.io/badge/coverage-88%25-brightgreen">
+  <a href="https://github.com/adeoluo/dependency-parser/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/adeoluo/dependency-parser/actions/workflows/ci.yml/badge.svg"></a>
+  <a href="https://github.com/adeoluo/dependency-parser/releases"><img alt="Release" src="https://img.shields.io/github/v/release/adeoluo/dependency-parser"></a>
   <img alt="Python" src="https://img.shields.io/badge/python-3.11%20%7C%203.12-blue">
-  <img alt="Type checked" src="https://img.shields.io/badge/mypy-strict-blue">
-  <img alt="Runtime dependencies" src="https://img.shields.io/badge/runtime%20deps-0-brightgreen">
-  <img alt="License" src="https://img.shields.io/badge/license-MIT-green">
+  <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-green"></a>
 </p>
 
 ---
@@ -21,22 +19,24 @@ A dependency parse states, for every word in a sentence, which other word it dep
 how. It is the backbone of relation extraction, question answering, and grammatical analysis.
 Transition-based parsing casts this structured prediction problem as a sequence of local
 decisions over a stack and a buffer, so a sentence of length *n* is parsed in a linear number
-of steps. This project implements the **arc-standard** system (Nivre, 2004) **from scratch**: the configuration and transitions, the **static oracle** that turns a gold tree
-into the transition sequence that builds it, an **averaged structured perceptron** policy over
-sparse features, and greedy decoding, all with **zero runtime dependencies** and no automatic
-differentiation.
+of steps.
+
+This project implements the **arc-standard** system (Nivre, 2004) **from scratch**: the
+configuration and transitions, the **static oracle** that turns a gold tree into the transition
+sequence that builds it, an **averaged structured perceptron** policy over sparse features, and
+greedy decoding, all with no automatic differentiation.
 
 ## Architecture
 
 <p align="center">
-  <img src="docs/architecture/architecture.svg" alt="System architecture" width="900">
+  <img src="docs/architecture/architecture.svg" alt="Architecture diagram" width="860">
 </p>
 
 A configuration holds a stack, a buffer, and the arcs committed so far. At each step the
 perceptron scores every legal transition from the surrounding words and parts of speech and
-the most probable one is applied. See the [ADRs](docs/adr/) for the key decisions.
+the highest-scoring one is applied. See the [ADRs](docs/adr/) for the key decisions.
 
-## The transition system
+### The transition system
 
 The arc-standard system uses three transition families:
 
@@ -53,6 +53,16 @@ perceptron**: training follows the oracle sequence with teacher forcing, and on 
 where the highest-scoring legal transition disagrees with the oracle the weights are moved
 toward the oracle transition and away from the prediction. Collins-style averaging is applied
 lazily with update timestamps.
+
+### Components
+
+- **data**: a projective treebank generated from a small dependency grammar, with disjoint
+  splits and deliberate prepositional-attachment ambiguity.
+- **transitions**: the arc-standard configuration, transitions, and the static oracle.
+- **features**: sparse feature templates over the stack and buffer context.
+- **perceptron**: the averaged structured perceptron with lazy weight averaging.
+- **parser**: the training loop and greedy decoder.
+- **evaluation**: unlabeled and labeled attachment scoring.
 
 ## Results
 
@@ -71,7 +81,7 @@ On a held-out treebank the from-scratch parser reaches **0.9879 UAS**. The resid
 concentrated on genuinely ambiguous **prepositional attachments**: the treebank deliberately
 makes some prepositions lean toward noun attachment and others toward verb attachment while
 leaving a residue that cannot be resolved from the observable tokens. The parser learns the
-per-preposition bias and accepts the irreducible remainder, exactly as a real parser must.
+per-preposition bias and accepts the irreducible remainder, as a real parser must.
 
 ### Scale
 
@@ -90,10 +100,23 @@ trained parser is applied at every size. Run with `uv run python benchmarks/scal
 | 4000 | 7.49 | 534.1 | 3.43 | 0.978 |
 | 8000 | 18.21 | 439.3 | 6.88 | 0.979 |
 
-Honest caveat: the treebank is synthetic and grammar-generated, and this pure-Python
-implementation is not benchmarked against compiled parsers.
+Caveat: the treebank is synthetic and grammar-generated, and this Python implementation is not
+benchmarked against compiled parsers.
 
-## Demonstration
+## Quickstart
+
+```bash
+git clone https://github.com/adeoluo/dependency-parser.git && cd dependency-parser
+make setup                    # install dev tooling + pre-commit hooks
+make all                      # lint + type-check + test
+
+python -m dependency_parser evaluate                                   # attachment scores
+python -m dependency_parser parse the/DET engineer/NOUN trains/VERB    # parse a sentence
+```
+
+## Usage
+
+### Command line
 
 ```text
 $ python -m dependency_parser parse the/DET engineer/NOUN trains/VERB the/DET model/NOUN
@@ -108,16 +131,7 @@ Predicted dependencies (dependent -> head : relation):
 The parser recovers the full tree: the determiners attach to their nouns, the subject and
 object attach to the verb, and the verb is the sentence root.
 
-## Quickstart
-
-```bash
-git clone https://github.com/adeoluo/dependency-parser.git && cd dependency-parser
-make setup                    # install dev tooling + pre-commit hooks
-make all                      # lint + type-check + test
-
-python -m dependency_parser evaluate                                   # attachment scores
-python -m dependency_parser parse the/DET engineer/NOUN trains/VERB    # parse a sentence
-```
+### Library
 
 Train on your own grammar or treebank:
 
@@ -130,9 +144,9 @@ parse = parser.parse(train_data()[0])
 print(parse.heads, parse.labels)
 ```
 
-## Running the service
+### HTTP service
 
-A dependency-free HTTP service trains the parser once at startup and parses sentences:
+A standard-library HTTP service trains the parser once at startup and parses sentences:
 
 ```bash
 python -m dependency_parser serve --port 8000
@@ -150,24 +164,32 @@ and latency metrics in Prometheus text format). A production-style stress benchm
 path and tradeoffs are in [docs/SCALING.md](docs/SCALING.md) and a full walk-through is in the
 [case study](docs/CASE_STUDY.md).
 
-## Components
-
-- **data** - a projective treebank generated from a small dependency grammar, with disjoint
-  splits and deliberate prepositional-attachment ambiguity.
-- **transitions** - the arc-standard configuration, transitions, and the static oracle.
-- **features** - sparse feature templates over the stack and buffer context.
-- **perceptron** - the averaged structured perceptron with lazy weight averaging.
-- **parser** - the training loop and greedy decoder.
-- **evaluation** - unlabeled and labeled attachment scoring.
-
 ## Design decisions
 
 - **Arc-standard transitions with a static oracle.** Linear-time parsing with an exact oracle
   for every projective tree, which keeps training simple and fully supervised.
   ([ADR-0002](docs/adr/0002-arc-standard-oracle.md))
 - **An averaged structured perceptron, not a neural policy.** A sparse linear model with
-  Collins averaging is transparent, dependency-free, and strong on this task.
+  Collins averaging is transparent, fast to train, and strong on this task.
   ([ADR-0003](docs/adr/0003-averaged-perceptron.md))
+
+## Testing
+
+```bash
+make test        # uv run pytest
+make coverage    # pytest with an 80% coverage gate, as in CI
+make lint type   # ruff format check, ruff lint, mypy
+```
+
+- `tests/test_core.py` checks that generated trees are well formed, that the static oracle's
+  transition sequence reconstructs the gold tree, legal moves from a configuration, transition
+  key round-trips, that the averaged perceptron matches the mean of its post-update weights,
+  and that the trained parser assigns a head to every token and reaches a high attachment score.
+- `tests/test_service.py` exercises the HTTP handler layer: health and readiness, `/parse` and
+  `/evaluate`, rejection of malformed payloads, unknown routes, and recorded metrics.
+
+CI runs ruff format, ruff lint, mypy, and pytest with the coverage gate on Python 3.11 and 3.12,
+then builds the package and the Docker image.
 
 ## Responsible AI
 
@@ -192,5 +214,4 @@ path and tradeoffs are in [docs/SCALING.md](docs/SCALING.md) and a full walk-thr
 
 ## License
 
-[MIT](LICENSE). Part of an artificial intelligence engineering portfolio by
-[adeoluo](https://github.com/adeoluo).
+Released under the [MIT License](LICENSE).

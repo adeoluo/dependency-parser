@@ -11,7 +11,7 @@ standard-library ``tracemalloc`` module, and UAS.
 Timing is measured without tracemalloc (which otherwise slows every allocation);
 peak memory is traced separately around the treebank plus a single parse, which
 is faithful because sentences are parsed one at a time. The treebank is
-synthetic. This pure-Python from-scratch implementation is not competitive on
+synthetic. This from-scratch Python implementation is not competitive on
 wall-clock time with compiled parsers; the goal is to show how greedy decoding
 scales with the number of sentences. Deterministic and offline; run with:
 
@@ -84,7 +84,7 @@ def run_scale(sizes: tuple[int, ...] = WORKLOAD_SIZES) -> list[ScaleRow]:
 
 def main() -> None:
     print("Synthetic grammar-generated treebank; from-scratch transition-based parser.")
-    print("Pure-Python greedy decoding; not benchmarked against compiled parsers.")
+    print("Interpreted-Python greedy decoding; not benchmarked against compiled parsers.")
     print(f"{'sentences':>10}  {'seconds':>9}  {'sent/sec':>9}  {'peak MiB':>9}  {'UAS':>7}")
     for row in run_scale():
         print(

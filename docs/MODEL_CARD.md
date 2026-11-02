@@ -2,7 +2,7 @@
 
 ## Overview
 - **What it is:** an arc-standard, transition-based dependency parser with an averaged
-  structured perceptron policy, implemented from scratch with zero runtime dependencies.
+  structured perceptron policy, implemented from scratch.
 - **Base model(s):** from-scratch; no pretrained components.
 - **Version and date:** 1.0, 2026-01-01.
 

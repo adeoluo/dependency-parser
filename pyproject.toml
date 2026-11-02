@@ -1,7 +1,7 @@
 [project]
 name = "dependency-parser"
 version = "0.1.0"
-description = "Arc-standard transition-based dependency parser with an averaged perceptron, from scratch and dependency-free."
+description = "Arc-standard transition-based dependency parser with an averaged perceptron, built from scratch."
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }

@@ -35,6 +35,6 @@ accuracy for training cost.
   with a higher asymptotic cost.
 
 ## Limits
-Training is pure Python and single-threaded, which is ideal for learning and modest treebanks
+Training is single-threaded Python, which is ideal for learning and modest treebanks
 but not for web-scale corpora. The controlled grammar bounds the vocabulary and construction
 inventory; scaling to natural text is a data and modeling problem, not a throughput one.

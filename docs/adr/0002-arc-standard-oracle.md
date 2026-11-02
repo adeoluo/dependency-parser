@@ -9,7 +9,7 @@ sentence. Two broad families solve it. Graph-based parsers score every candidate
 search for the maximum spanning tree, which is accurate but runs in at least quadratic time
 and needs a global inference algorithm. Transition-based parsers reduce parsing to a sequence
 of local decisions over a stack and a buffer, which is linear time and maps cleanly onto a
-greedy classifier. We want a dependency-free, transparent implementation that trains quickly
+greedy classifier. We want a self-contained, transparent implementation that trains quickly
 and is easy to reason about.
 
 Within the transition-based family, arc-eager and arc-standard are the common systems.

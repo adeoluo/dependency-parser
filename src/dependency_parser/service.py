@@ -1,4 +1,4 @@
-"""A dependency-free HTTP service exposing the trained dependency parser.
+"""A standard-library HTTP service exposing the trained dependency parser.
 
 The service trains the parser once at startup over the bundled treebank and then
 parses submitted sentences and reports held-out attachment scores. A pure handler
