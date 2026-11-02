@@ -171,6 +171,22 @@ and latency metrics in Prometheus text format). A production-style stress benchm
 path and tradeoffs are in [docs/SCALING.md](docs/SCALING.md) and a full walk-through is in the
 [case study](docs/CASE_STUDY.md).
 
+### Demos
+
+Recorded from real runs with [vhs](https://github.com/charmbracelet/vhs); each tape is in `docs/demo/`.
+
+Parsing a tagged sentence into a dependency tree.
+
+<p align="center">
+  <img src="docs/demo/parse.gif" alt="Parsing a tagged sentence into a dependency tree" width="860">
+</p>
+
+Attachment scores on the held-out set.
+
+<p align="center">
+  <img src="docs/demo/evaluate.gif" alt="Attachment scores on the held-out set" width="860">
+</p>
+
 ## Design decisions
 
 - **Arc-standard transitions with a static oracle.** Linear-time parsing with an exact oracle
