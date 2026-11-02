@@ -5,55 +5,43 @@ flowchart LR
     classDef control  fill:#0EA5E9,stroke:#1E293B,color:#ffffff,stroke-width:1px;
     classDef obs      fill:#CBD5E1,stroke:#1E293B,color:#1E293B,stroke-width:1px;
 
-    User([CLI user]):::edge
-    Client([HTTP client]):::edge
-
-    subgraph Interfaces["Interfaces (CLI and stdlib HTTP)"]
+    subgraph Interfaces["Interfaces"]
         direction TB
-        CLI["cli.py<br/>evaluate | parse | serve"]:::edge
-        Router["service.py router<br/>/health /ready /parse /evaluate /metrics"]:::core
-        Validate["Request validation<br/>form and pos objects, max 100"]:::control
+        Users([Users and clients]):::edge
+        CLI["CLI<br/>evaluate, parse, serve"]:::edge
+        Router["HTTP service<br/>/parse /evaluate"]:::core
+        Validate["Validation<br/>form and POS, max 100"]:::control
+        Users --> CLI ~~~ Router --> Validate
     end
 
-    subgraph Core["Core logic (arc-standard parser)"]
+    subgraph Train["Training (at startup)"]
         direction TB
-        Oracle["Static oracle<br/>gold transition sequence"]:::core
-        Trainer["parser.py training loop<br/>teacher forcing, shuffled epochs"]:::core
+        Treebank[("Seeded treebank<br/>400 train, 100 test")]:::data
+        Oracle["Static oracle<br/>gold transitions"]:::core
+        Trainer["Perceptron training<br/>teacher forcing"]:::core
+        Config["TrainingConfig<br/>epochs, seed"]:::control
+        Weights[("Averaged weights<br/>feature by action")]:::data
+        Config ~~~ Treebank --> Oracle --> Trainer --> Weights
+    end
+
+    subgraph Parse["Greedy parsing"]
+        direction TB
         Configuration["Configuration<br/>stack, buffer, arcs"]:::core
-        Features["features.py<br/>stack and buffer templates"]:::core
-        Legal["Legal transitions<br/>SHIFT, LEFT, RIGHT"]:::control
-    end
-
-    subgraph State["Data and model state (in memory)"]
-        direction TB
-        Treebank[("data.py<br/>seeded projective treebank")]:::data
-        TrainConfig["TrainingConfig<br/>epochs, seed"]:::control
-        Weights[("Averaged perceptron<br/>feature by action weights")]:::data
+        Features["Feature templates<br/>stack and buffer"]:::core
+        Legal["Legal transitions<br/>apply best, repeat"]:::control
+        Configuration --> Features --> Legal
     end
 
     subgraph Obs["Evaluation and observability"]
         direction TB
-        Eval["evaluation.py<br/>UAS and LAS"]:::obs
-        Metrics["ServiceMetrics<br/>Prometheus text"]:::obs
-        Response["JSON heads and relations"]:::obs
+        Response["JSON response<br/>heads and relations"]:::obs
+        Eval["Attachment scores<br/>UAS and LAS"]:::obs
+        Metrics["Metrics<br/>Prometheus text"]:::obs
+        Response ~~~ Eval ~~~ Metrics
     end
 
-    User -->|arguments| CLI
-    Client -->|JSON request| Router
-    Router -->|POST /parse| Validate
-    CLI -->|train before use| Trainer
-    Treebank -->|train split, 400 trees| Oracle
-    Oracle -->|gold transitions| Trainer
-    TrainConfig -.-> Trainer
-    Features -->|training features| Trainer
-    Trainer -->|perceptron updates| Weights
-    Validate -->|tokens| Configuration
-    CLI -->|form/POS tokens| Configuration
-    Configuration -->|context| Features
-    Features -->|feature strings| Legal
-    Weights -.->|scores| Legal
-    Legal -->|argmax transition| Configuration
-    Configuration -->|terminal arcs| Response
-    Treebank -.->|test split, 100 trees| Eval
-    Configuration -->|predicted arcs| Eval
-    Router -.->|route latency and errors| Metrics
+    Interfaces -->|train| Train
+    Interfaces -->|tokens| Parse
+    Train -.->|weights| Parse
+    Parse -->|arcs| Obs
+    Train -.->|test split| Obs
