@@ -1,0 +1,37 @@
+# Dependency Parser
+
+> An arc-standard, transition-based dependency parser built from scratch: a static oracle, an averaged structured perceptron policy, greedy decoding, and attachment-score evaluation.
+
+Languages: Python. License: MIT. Source: https://github.com/adeoluo/dependency-parser
+
+## Docs
+
+- [README](https://github.com/adeoluo/dependency-parser/blob/main/README.md): motivation, architecture, results, quickstart, usage, design decisions, testing, responsible ai, limitations, roadmap
+- [AGENTS.md](https://github.com/adeoluo/dependency-parser/blob/main/AGENTS.md): layout, commands and conventions for changing the code
+- [Architecture diagram](https://github.com/adeoluo/dependency-parser/blob/main/docs/architecture/architecture.mmd): Mermaid source of the component diagram
+- [Case Study - Parsing a sentence end to end](https://github.com/adeoluo/dependency-parser/blob/main/docs/CASE_STUDY.md)
+- [Data Card - Dependency Parser](https://github.com/adeoluo/dependency-parser/blob/main/docs/DATA_CARD.md)
+- [Definition of Done](https://github.com/adeoluo/dependency-parser/blob/main/docs/DEFINITION_OF_DONE.md)
+- [Evaluation Report - Dependency Parser](https://github.com/adeoluo/dependency-parser/blob/main/docs/EVALUATION_REPORT.md)
+- [Model / System Card - Dependency Parser](https://github.com/adeoluo/dependency-parser/blob/main/docs/MODEL_CARD.md)
+- [Operations Guide - Dependency Parser](https://github.com/adeoluo/dependency-parser/blob/main/docs/OPERATIONS.md)
+- [Scaling - Dependency Parser](https://github.com/adeoluo/dependency-parser/blob/main/docs/SCALING.md)
+- [Threat Model - Dependency Parser](https://github.com/adeoluo/dependency-parser/blob/main/docs/THREAT_MODEL.md)
+- [ADR-0001: Record architecture decisions](https://github.com/adeoluo/dependency-parser/blob/main/docs/adr/0001-record-architecture-decisions.md)
+- [ADR-0002: Arc-standard transitions with a static oracle](https://github.com/adeoluo/dependency-parser/blob/main/docs/adr/0002-arc-standard-oracle.md)
+- [ADR-0003: An averaged structured perceptron policy](https://github.com/adeoluo/dependency-parser/blob/main/docs/adr/0003-averaged-perceptron.md)
+- [ADR-NNNN: <short title>](https://github.com/adeoluo/dependency-parser/blob/main/docs/adr/template.md)
+- [Changelog](https://github.com/adeoluo/dependency-parser/blob/main/CHANGELOG.md): release history
+
+## Source
+
+- [src/dependency_parser/__init__.py](https://github.com/adeoluo/dependency-parser/blob/main/src/dependency_parser/__init__.py): Dependency Parser - an arc-standard transition-based parser, from scratch.
+- [src/dependency_parser/cli.py](https://github.com/adeoluo/dependency-parser/blob/main/src/dependency_parser/cli.py): Command line interface for the dependency parser.
+- [src/dependency_parser/data.py](https://github.com/adeoluo/dependency-parser/blob/main/src/dependency_parser/data.py): A deterministic, projective dependency treebank generated from a known grammar.
+- [src/dependency_parser/evaluation.py](https://github.com/adeoluo/dependency-parser/blob/main/src/dependency_parser/evaluation.py): Attachment-score evaluation for the dependency parser.
+- [src/dependency_parser/features.py](https://github.com/adeoluo/dependency-parser/blob/main/src/dependency_parser/features.py): Feature templates over an arc-standard configuration.
+- [src/dependency_parser/observability.py](https://github.com/adeoluo/dependency-parser/blob/main/src/dependency_parser/observability.py): In-process request metrics for the HTTP service (Prometheus text exposition).
+- [src/dependency_parser/parser.py](https://github.com/adeoluo/dependency-parser/blob/main/src/dependency_parser/parser.py): The greedy transition based parser: training loop and decoding.
+- [src/dependency_parser/perceptron.py](https://github.com/adeoluo/dependency-parser/blob/main/src/dependency_parser/perceptron.py): An averaged structured perceptron over transition decisions.
+- [src/dependency_parser/service.py](https://github.com/adeoluo/dependency-parser/blob/main/src/dependency_parser/service.py): A standard-library HTTP service exposing the trained dependency parser.
+- [src/dependency_parser/transitions.py](https://github.com/adeoluo/dependency-parser/blob/main/src/dependency_parser/transitions.py): The arc-standard transition system and its static oracle.
