@@ -1,10 +1,22 @@
 cff-version: 1.2.0
-message: "If you use this work, please cite it."
+message: "If you use this software, please cite it as below."
+type: software
 title: "Dependency Parser"
+abstract: "An arc-standard transition-based dependency parser from scratch: a static oracle, an averaged structured perceptron policy, greedy decoding, and attachment-score evaluation."
 authors:
   - family-names: "Ogunnoiki"
     given-names: "Adeolu"
-version: 0.1.0
-date-released: 2026-01-01
+version: "0.1.0"
+date-released: "2026-11-03"
 license: MIT
+repository-code: "https://github.com/adeoluo/dependency-parser"
 url: "https://github.com/adeoluo/dependency-parser"
+keywords:
+  - "arc-standard"
+  - "averaged-perceptron"
+  - "dependency-parsing"
+  - "from-scratch"
+  - "nlp"
+  - "python"
+  - "structured-prediction"
+  - "transition-based"
