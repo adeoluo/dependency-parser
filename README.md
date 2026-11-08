@@ -7,7 +7,7 @@
 <p align="center">
   <a href="https://github.com/adeoluo/dependency-parser/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/adeoluo/dependency-parser/actions/workflows/ci.yml/badge.svg"></a>
   <a href="https://github.com/adeoluo/dependency-parser/releases"><img alt="Release" src="https://img.shields.io/github/v/release/adeoluo/dependency-parser"></a>
-  <img alt="Python" src="https://img.shields.io/badge/python-3.11%20%7C%203.12-blue">
+  <img alt="Python" src="https://img.shields.io/badge/python-3.12%20%7C%203.13%20%7C%203.14%20%7C%203.15-blue">
   <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-green"></a>
 </p>
 
@@ -217,7 +217,7 @@ make lint type   # ruff format check, ruff lint, mypy
 - `tests/test_service.py` exercises the HTTP handler layer: health and readiness, `/parse` and
   `/evaluate`, rejection of malformed payloads, unknown routes, and recorded metrics.
 
-CI runs ruff format, ruff lint, mypy, and pytest with the coverage gate on Python 3.11 and 3.12,
+CI runs ruff format, ruff lint, mypy, and pytest with the coverage gate on Python 3.12, 3.13, 3.14 and 3.15,
 then builds the package and the Docker image.
 
 ## Responsible AI
